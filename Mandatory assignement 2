@@ -1,0 +1,164 @@
+#Dragoljub Blagojevic 2015-10-22
+#Program reads a csv file which is always following this structure: http://prntscr.com/8u0co0
+#Program then presents values in a string-formated table. 
+import os
+import sys
+import os.path
+import math
+"""Function list:
+string_input(), readCSVFile, 
+
+Explanation of lists:
+- fileList: Indexes each line of text from the shrub_volume_experiment
+- second_fileList: List containing stripped indexes from fileList
+- returnedList: Contains second_fileList as index[0] and length(number of shrubs) of second_fileList as index[1]
+- valueList: number of lists that contain splited indexes from second_fileList by ','
+- volume: contains calculated volume values
+- newAnalyseList: [intSpot, intExperiment, strHighType, intCarbonAmount]
+- printCarbonList: #A list which we will use to store Average amount of carbon values in. 
+
+"""
+
+def string_input(prompt):
+    """if input is an empty string, or string with invisible characters repeat the while == '' otherwise strip the string from all blank spaces including \n"""
+    strInput = ''
+    while strInput == '':
+        strInput = raw_input(prompt)
+        strInput = strInput.strip()
+    return strInput
+def readCSVFile(name):
+    """I have a file which looks like this(screenshot): http://prntscr.com/8sn3gr and what I need to do is to strip it out of the text part and have each line indexed in the list. The first line (index 0) will be deleted."""
+    strName = raw_input(name)
+    SearchFile = open(strName, 'r')
+    #creates a list fileList and each index will be a line 
+    fileList = SearchFile.readlines()
+    second_fileList = []
+    for index in fileList:
+        second_fileList.append(index.strip())
+    SearchFile.close()
+    #delete index 0 aka the text part
+    del second_fileList[0]
+    ValueList = []
+    for index in second_fileList:
+        ValueList.append(index.split(','))
+    for index in ValueList: 
+        index[0] = int(index[0])
+        index[1] = int(index[1])
+        index[2] = float(index[2])
+        index[3] = float(index[3])
+        index[4] = float(index[4])
+    #for index in second_fileList:
+    #list which will return second_fileList plus its index number
+    intSites = ValueList[-1][0]
+    returnedList = [ValueList, intSites]
+    return returnedList
+def getVolume(length, weight, hight):
+    """uses function readCSVFile to calculate and fetch volume by multiplying length, width and height for each shrub"""
+    Volume = length*weight*hight
+    return Volume
+def getAmountofcarbon(volume):
+    """calculating amount of carbon by using volume as parameter"""
+    amount = 1.8 + 2*math.log(volume)
+    return amount
+def getHightType(hight):
+    if hight < 2:
+        return 'short'
+    elif hight >= 2 and hight <= 5:
+        return 'medium'
+    elif hight > 5:
+        return 'tall'
+def createAnalyseList(list):
+    """Analyses data from each shrub by using getAmountofcarbon((getVolume()) and getHightType"""
+    resultList = []
+    for index in list:
+        intSpot = index[0]
+        intExperiment = index[1]
+        strHightType = getHightType(index[4])
+        intVolumeAmount = getVolume(index[2], index[3], index[4])
+        intCarbonAmount = getAmountofcarbon(intVolumeAmount)
+        AnalyseList = [intSpot, intExperiment, strHightType, intCarbonAmount]
+        resultList.append(AnalyseList)
+    return resultList
+def getAverageAmountOfCarbon(id, list):
+    """Searches and returns the average amount of carbon"""
+    floatNumb = float(0)
+    intTracker = 0
+    for index in list:
+        if index[1] == id:
+            floatNumb = floatNumb + float(index[3])
+            intTracker = intTracker + 1
+    floatAverage = floatNumb/intTracker
+    return floatAverage                                  
+def printAverageAmountOfCarbon(list):
+    """Prints average amount of carbon"""
+    intExperimentNumber = 1
+    for index in list:
+        print 'Experiment no %d, Average amount of carbon: %.1f' % (intExperimentNumber, index)
+        intExperimentNumber = intExperimentNumber + 1    
+def getMaxAmountOfCarbon(list):
+    """Prints maximum amount of carbon"""
+    floatMaxAmount = float(0)
+    for index in list:
+        if index[3] > floatMaxAmount:
+            floatMaxAmount = index[3]
+            SiteNumb = index[0]
+            ExperimentNumb = index[1]
+    print '\nThe shrub on site %d using experiment %d gave %.1f carbon' % (SiteNumb, ExperimentNumb, floatMaxAmount)
+def printSiteFacts(list, nosites):
+    """Prints out facts about each site in a nice formated table"""
+    print '%5s %5s %5s %5s %5s %5s' % ('Site','Shrubs','Short','Medium','Large','Carbon')
+    #keeps track of number of sites
+    intTrack = 0 
+    for index in range(1, nosites + 1):
+        #Explanation for nosites - 1 is that amount of shrubs on a site is exquel to number of experiments - 1. 
+        intShort = 0
+        intMedium = 0 
+        intTall = 0
+        floatCarbon = 0.0
+        intAmountOfShrubsPerSite = 0
+        for element in list:
+            if element[0] == index:
+                if element[2] == 'short':
+                    intShort = intShort + 1
+                elif element[2] == 'medium':
+                    intMedium = intMedium + 1
+                elif element[2] == 'tall':
+                    intTall = intTall + 1
+                #intAmountOfShrubsPerSite = intAmountOfShrubsPerSite + 1
+                floatCarbon = floatCarbon + element[3]
+        
+        shrubCount = intShort + intMedium + intTall        
+        floatCarbon = floatCarbon/shrubCount
+        intTrack = intTrack + 1
+        print '%5d %5d %5d %5d %5d %7.2f' % (intTrack, shrubCount, intShort, intMedium, intTall, floatCarbon)
+def writeCSVFile(data, filename):
+    """Creates a new file (.txt or .csv) depending on what the user choses by adding .txt or .csv. In addition it stores values from Dataas a string in the new file, one index per line. """
+    writeNewFile = open(filename, 'w')
+    for index in data:
+        minilist=[]
+        for element in index:
+            minilist.append(str(element))
+        writeNewFile.write(",".join(minilist)+'\n')
+    writeNewFile.close()
+    print writeNewFile.closed
+#Program executes
+#Asks of user which file is to be read
+listCSV = readCSVFile('Write the name of the file: ')
+listAnalyse = createAnalyseList(listCSV[0])
+
+#A list which we will use to store Average amount of carbon values in. 
+PrintCarbonList = []
+intAny = 1
+while intAny < 4:
+    MeanValueCarbon = getAverageAmountOfCarbon(intAny, listAnalyse)
+    PrintCarbonList.append(MeanValueCarbon)
+    intAny = intAny + 1
+#Pints average amount of carbon
+printAverageAmountOfCarbon(PrintCarbonList)
+#prints max amount of carbon
+getMaxAmountOfCarbon(listAnalyse)
+#prints stored facts for each site 
+printSiteFacts(listAnalyse, int(listCSV[1]))
+#Asks of user to give the name of the new file in which he/she wants to stored the indexed values
+writeCSVFile(listAnalyse, string_input('Give the name for the file (make sure to put type of file in the end. e.g .txt or .csv: '))
+#Program ends
