@@ -1,0 +1,29 @@
+#Dragoljub Blagojevic 2015-10-22
+#Program translates the input to so called swedish pirate(or robber)-language. https://en.wikipedia.org/wiki/R%C3%B6varspr%C3%A5ket
+#creates a methond that "translates" to swedish pirate-language with a string as an argument
+def trans(strInput):
+    consonants = 'bcdfghjklmnpqrstvwxzBCDFGHJKLMNPQRSTVWXZ'
+    #variable that will be built up on. 
+    strJoin = ''
+    strInput = raw_input('Write a sentence for computer to translate it to swedish piratelanguage: ')
+    #for each element(index) in strInput(what the user types), do (the code that follows)
+    for strIndex in strInput:
+        #If letter in index 0 is in consonants, then print out the letter as it is + 'o' + the same, but lowercase letter. 
+        if strIndex[0] in consonants:
+            strJoin = strJoin + strIndex + 'o' + strIndex.lower()
+            #should be: if element is == 'H' or 'h', add a 't'. The problem is that that is not working, and I dont have time to fix it. 
+        #elif strIndex == 'H' or strIndex == 'h' in consonants:
+            #strJoin = strJoin + strIndex + 'o' + 't'
+        elif strIndex in consonants:
+            strJoin = strJoin + strIndex + 'o' + strIndex
+            
+        else:
+            strJoin = strJoin + strIndex
+    #prints out str join on the same line. 
+    print strJoin
+
+#I could have created a while() for user to repeat but because of lack of time I cannot write it. 
+    #A menthod which is used, and can be used anywhere in a potential program. 
+trans(raw_input)
+
+
